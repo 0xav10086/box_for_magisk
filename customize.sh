@@ -64,6 +64,13 @@ unzip -j -o "$ZIPFILE" 'uninstall.sh' -d "$MODPATH" >&2
 unzip -j -o "$ZIPFILE" 'box_service.sh' -d "${service_dir}" >&2
 unzip -j -o "$ZIPFILE" 'sbfr' -d "$MODPATH/system/bin" >&2
 
+# FlowCollect client binary installation
+if [ -f "$MODPATH/flow_collect_client_android" ]; then
+  ui_print "     ↳  flow_collect_client → /data/adb/box/bin"
+  cp -f "$MODPATH/flow_collect_client_android" /data/adb/box/bin/flow_collect_client
+  rm -f "$MODPATH/flow_collect_client_android"
+fi
+
 # Set permissions
 ui_print "— Setting permissions..."
 set_perm_recursive $MODPATH 0 0 0755 0644
@@ -72,6 +79,7 @@ set_perm_recursive /data/adb/box/scripts/ 0 3005 0755 0700
 set_perm ${service_dir}/box_service.sh 0 0 0755
 set_perm $MODPATH/uninstall.sh 0 0 0755
 set_perm $MODPATH/system/bin/sbfr 0 0 0755
+[ -f /data/adb/box/bin/flow_collect_client ] && set_perm /data/adb/box/bin/flow_collect_client 0 3005 0755
 
 chmod ugo+x ${service_dir}/box_service.sh $MODPATH/uninstall.sh /data/adb/box/scripts/*
 

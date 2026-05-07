@@ -748,6 +748,19 @@ start_box() {
   done
   box_bin_status
 
+  # ── FlowCollect Sidecar Process ──
+  flow_collect_bin="${bin_dir}/flow_collect_client"
+  flow_collect_pid="${box_run}/flow_collect.pid"
+  flow_collect_config="/data/adb/box/clash/config.yaml"
+  if [ -x "${flow_collect_bin}" ] && [ -f "${flow_collect_config}" ]; then
+    nohup busybox setuidgid root:net_admin "${flow_collect_bin}" -c "${flow_collect_config}" > "${box_run}/flow_collect.log" 2>&1 &
+    echo -n $! > "${flow_collect_pid}"
+    log Info "FlowCollect client started (PID: $!)"
+  else
+    [ ! -x "${flow_collect_bin}" ] && log Warning "FlowCollect binary not found: ${flow_collect_bin}"
+    [ ! -f "${flow_collect_config}" ] && log Warning "FlowCollect config not found: ${flow_collect_config}"
+  fi
+
   # OOM Killer
   # box_pid=$(cat ${box_pid})
   # # Setting oom_adj
@@ -770,6 +783,18 @@ start_box() {
 
 stop_box() {
   stop_cron
+
+  # ── Stop FlowCollect Sidecar Process ──
+  flow_collect_pid="${box_run}/flow_collect.pid"
+  if [ -f "${flow_collect_pid}" ]; then
+    local fc_pid=$(<"${flow_collect_pid}" 2>/dev/null)
+    if [ -n "${fc_pid}" ] && kill -0 "${fc_pid}" 2>/dev/null; then
+      kill -15 "${fc_pid}" 2>/dev/null
+      log Info "FlowCollect client stopped (PID: ${fc_pid})"
+    fi
+    rm -f "${flow_collect_pid}"
+  fi
+
   # Kill each binary using a loop
   for bin in "${bin_list[@]}"; do
     # Check if the binary is running using pgrep
