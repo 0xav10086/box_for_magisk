@@ -89,12 +89,13 @@ apply_mirror() {
   ui_print "     ↳  mirror to speed up downloads"
   ui_print "— [ Vol UP(+): Yes ]"
   ui_print "— [ Vol DOWN(-): No ]"
+  ui_print "— [ Auto-confirm in 5s ]"
   START_TIME=$(date +%s)
   while true ; do
     NOW_TIME=$(date +%s)
     timeout 1 getevent -lc 1 2>&1 | grep KEY_VOLUME > "$TMPDIR/events"
-    if [ $(( NOW_TIME - START_TIME )) -gt 9 ]; then
-      ui_print "— No input detected after 10 seconds..."
+    if [ $(( NOW_TIME - START_TIME )) -gt 4 ]; then
+      ui_print "— No input detected, auto-confirming..."
       ui_print "— ghfast acceleration enabled."
       sed -i 's/use_ghproxy=.*/use_ghproxy="true"/' /data/adb/box/scripts/box.tool
       break
@@ -141,15 +142,11 @@ find_bin() {
   while true; do
     NOW_TIME=$(date +%s)
     timeout 1 getevent -lc 1 2>&1 | grep KEY_VOLUME > "$TMPDIR/events"
-    
-    if [ $(( NOW_TIME - START_TIME )) -gt 9 ]; then
-      ui_print "— No input detected after 10 seconds..."
-      if [ "$bin" = "clash" ]; then
-        ui_print "— Download enabled for clash."
-        /data/adb/box/scripts/box.tool $action
-      else
-        ui_print "— Download disabled for $bin."
-      fi
+
+    if [ $(( NOW_TIME - START_TIME )) -gt 4 ]; then
+      ui_print "— No input detected, auto-confirming..."
+      ui_print "— Download enabled for $bin."
+      /data/adb/box/scripts/box.tool $action
       break
     elif grep -q KEY_VOLUMEUP "$TMPDIR/events"; then
       ui_print "— Download enabled."
@@ -228,12 +225,15 @@ apply_ini() {
   ui_print "— Would you like to restore settings.ini?"
   ui_print "— [ Vol UP(+): Yes ]"
   ui_print "— [ Vol DOWN(-): No ]"
+  ui_print "— [ Auto-confirm in 5s ]"
   START_TIME=$(date +%s)
   while true ; do
     NOW_TIME=$(date +%s)
     timeout 1 getevent -lc 1 2>&1 | grep KEY_VOLUME > "$TMPDIR/events"
-    if [ $(( NOW_TIME - START_TIME )) -gt 9 ]; then
-      ui_print "— Skipped restoring settings.ini"
+    if [ $(( NOW_TIME - START_TIME )) -gt 4 ]; then
+      ui_print "— No input detected, auto-confirming..."
+      ui_print "— Restoring settings.ini"
+      restore_ini
       break
     elif $(cat $TMPDIR/events | grep -q KEY_VOLUMEUP); then
       restore_ini
