@@ -1,0 +1,56 @@
+# Config B: same as A but fallback replaced with domestic DoH (alidns/doh.pub)
+mixed-port: 7892
+external-controller: 127.0.0.1:9093
+mode: rule
+log-level: info
+dns:
+  enable: true
+  listen: 0.0.0.0:1055
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/20
+  fake-ip-filter-mode: blacklist
+  fake-ip-filter:
+    - "*.lan"
+    - "*.local"
+    - "*.localdomain"
+    - "*.example"
+    - "*.invalid"
+    - "*.localhost"
+    - "*.home.arpa"
+    - "time.*.apple.com"
+    - "lancache.*"
+    - "+.push.apple.com"
+    - "+.mask.icloud.com"
+    - "+.mask-h2.icloud.com"
+    - "+.fflink.cc"
+    - "+.fflinkb02.cc"
+    - "+.0xav10086.space"
+  default-nameserver:
+    - 223.5.5.5
+    - 114.114.114.114
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  fallback:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    domain:
+      - "+.google.com"
+      - "+.facebook.com"
+      - "+.youtube.com"
+      - "+.github.com"
+      - "+.telegram.org"
+  nameserver-policy:
+    "geosite:cn": [223.5.5.5, 114.114.114.114]
+    "geosite:private": [223.5.5.5, 114.114.114.114]
+    "geosite:geolocation-!cn": [8.8.8.8]
+    "geosite:steam": [1.1.1.1, 8.8.8.8]
+    "geosite:netflix": [1.1.1.1, 8.8.8.8]
+    "dash.0xav10086.space": [223.5.5.5, 114.114.114.114]
+    "proxy.0xav10086.space": [223.5.5.5, 114.114.114.114]
+rules:
+  - MATCH,DIRECT
